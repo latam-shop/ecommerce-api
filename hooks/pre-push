@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Obtener el nombre de la rama actual
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# 1. Bloqueo de ramas protegidas
+if [ "$branch" = "dev" ] || [ "$branch" = "prod" ] || [ "$branch" = "pre" ]; then
+  echo "❌ ERROR: Intento de PUSH directo a la rama protegida '$branch'."
+  echo "Debes abrir un Pull Request para integrar cambios en esta rama."
+  exit 1
+fi
+
+echo "🌿 Rama detectada: $branch"
+echo "🧪 [PUSH] Ejecutando batería de tests antes de subir código..."
+
+if ! ./mvnw test; then
+    echo "❌ ERROR: Los tests han fallado."
+    echo "El código NO se subirá al servidor. Arregla los tests primero."
+    exit 1
+fi
+
+echo "✅ Tests pasados con éxito. Subiendo código a origin/$branch..."

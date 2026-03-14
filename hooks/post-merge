@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q "pom.xml"; then
+  echo "📦 [POST-MERGE] Se detectaron cambios en el pom.xml."
+  echo "Actualizando dependencias y compilando..."
+
+  ./mvnw clean compile
+
+  echo "✅ Entorno actualizado correctamente."
+else
+  echo "[POST-MERGE] No hay paquetes que actualizar"
+fi

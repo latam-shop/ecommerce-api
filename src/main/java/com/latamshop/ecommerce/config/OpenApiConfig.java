@@ -11,11 +11,9 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** OpenAPI configuration for documentation and JWT security setup. */
 @Configuration
 public class OpenApiConfig {
 
-  /** Defines the main OpenAPI configuration with JWT security scheme. */
   @Bean
   public OpenAPI customOpenApi() {
 
@@ -43,13 +41,11 @@ public class OpenApiConfig {
                 .bearerFormat("JWT"));
   }
 
-  /** OpenAPI group for public endpoints. */
   @Bean
   public GroupedOpenApi publicApi() {
     return GroupedOpenApi.builder().group("Public API").pathsToMatch("/api/public/**").build();
   }
 
-  /** OpenAPI group for admin endpoints. */
   @Bean
   public GroupedOpenApi adminApi() {
     return GroupedOpenApi.builder().group("Admin API").pathsToMatch("/api/admin/**").build();

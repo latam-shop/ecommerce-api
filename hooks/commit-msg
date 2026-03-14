@@ -1,21 +1,35 @@
 #!/usr/bin/env bash
 
-# Create a regex for a conventional commit.
-convetional_commit_regex="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z \-]+\))?!?: .+$"
+# 1. Regex para Conventional Commits (mejorada para permitir mayúsculas opcionales en el sujeto)
+conventional_commit_regex="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z \-]+\))?!?: [A-Za-z0-9].+$"
 
-# Get the commit message (the parameter we're given is just the path to the
-# temporary file which holds the message).
-commit_message=$(cat "$1")
+# 2. Obtener el mensaje limpiando líneas de comentarios de Git
+commit_message=$(grep -v '^#' "$1")
 
-# Check the message, if we match, all good baby.
-if [[ "$commit_message" =~ $convetional_commit_regex ]]; then
-   echo -e "\e[32mCommit message meets Conventional Commit standards...\e[0m"
+# 3. Validar que el mensaje no esté vacío
+if [ -z "$commit_message" ]; then
+   echo -e "\e[31m❌ Error: El mensaje del commit no puede estar vacío.\e[0m"
+   exit 1
+fi
+
+# 4. Validar la longitud de la primera línea (Título)
+first_line=$(echo "$commit_message" | head -n 1)
+if [ ${#first_line} -gt 72 ]; then
+   echo -e "\e[33m⚠️  Aviso: El título es muy largo (${#first_line}/72). Intenta ser más breve.\e[0m"
+   # Opcional: exit 1 si quieres ser estricto
+   exit 1
+fi
+
+# 5. Validar contra la Regex
+if [[ "$first_line" =~ $conventional_commit_regex ]]; then
+   echo -e "\e[32m✅ Mensaje de commit válido...\e[0m"
    exit 0
 fi
 
-# Uh-oh, this is not a conventional commit, show an example and link to the spec.
-echo -e "\e[31mThe commit message does not meet the Conventional Commit standard\e[0m"
-echo "An example of a valid message is: "
-echo "  feat(login): add the 'remember me' button"
-echo "More details at: https://www.conventionalcommits.org/en/v1.0.0/#summary"
+# 6. Mensaje de error pedagógico
+echo -e "\e[31m❌ Error: El formato del mensaje no sigue 'Conventional Commits'.\e[0m"
+echo -e "\e[34mEstructura: tipo(alcance): descripción\e[0m"
+echo "Tipos válidos: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert"
+echo "Ejemplo: feat(auth): agregar validación de JWT"
+echo "Más info: https://www.conventionalcommits.org/es/"
 exit 1

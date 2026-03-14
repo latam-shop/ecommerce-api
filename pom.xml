@@ -206,6 +206,11 @@
 						<core.hooksPath>hooks/</core.hooksPath>
 						<custom.configuration>true</custom.configuration>
 					</gitConfig>
+					<installHooks>
+						<commit-msg>hooks/commit-msg</commit-msg>
+						<pre-commit>hooks/pre-commit</pre-commit>
+						<pre-push>hooks/pre-push</pre-push>
+					</installHooks>
 				</configuration>
 				<executions>
 					<execution>
