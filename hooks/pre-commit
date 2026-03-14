@@ -2,11 +2,11 @@
 
 # 1. Intentar aplicar el formato automáticamente
 echo "🎨 Aplicando formateo de código..."
-mvn spotless:apply
+./mvnw spotless:apply
 
 # 2. Solo añadir archivos que ya estaban en el index (evita basura)
 git add -u
 
 # 3. Validar que todo quedó perfecto
 echo "🎨 Validando formateo de código..."
-mvn spotless:check
+./mvnw spotless:check

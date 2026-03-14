@@ -175,6 +175,7 @@
 				<configuration>
 					<gitConfig>
 						<core.hooksPath>hooks/</core.hooksPath>
+						<custom.configuration>true</custom.configuration>
 					</gitConfig>
 				</configuration>
 				<executions>
