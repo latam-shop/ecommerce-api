@@ -30,6 +30,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       # 1. Validar formato (Spotless)
       # Aquí usamos 'check' porque el CI no debe "arreglar", solo "vigilar"
       - name: Check Code Formatting (Spotless)
