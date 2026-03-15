@@ -1,0 +1,52 @@
+name: CI Quality & Safety Validation
+
+# Configuramos para que se dispare SOLO en Pull Requests hacia ramas protegidas
+on:
+  pull_request:
+    branches:
+      - dev
+      - pre
+      - prod
+    # Opcional: solo si cambian archivos de código
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'hooks/**'
+
+jobs:
+  validate-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para algunas validaciones de Git
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 1. Validar formato (Spotless)
+      # Aquí usamos 'check' porque el CI no debe "arreglar", solo "vigilar"
+      - name: Check Code Formatting (Spotless)
+        run: ./mvnw spotless:check
+
+      # 2. Validar calidad y diseño (Checkstyle)
+      - name: Check Code Quality (Checkstyle)
+        run: ./mvnw checkstyle:check
+
+      # 3. Ejecutar Tests (Igual que tu pre-push)
+      - name: Run Unit & Integration Tests
+        run: ./mvnw test
+
+      # 4. Validar que no hay marcadores de conflicto (Seguridad extra)
+      - name: Verify no merge conflicts markers
+        run: |
+          if grep -rE "<<<<<<<|=======|>>>>>>>" src/; then
+            echo "Conflict markers detected!"
+            exit 1
+          fi
