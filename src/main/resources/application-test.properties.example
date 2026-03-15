@@ -1,0 +1,10 @@
+# Configuración para que Spring use H2 en memoria
+spring.datasource.url=jdbc:h2:mem:ecommerce_db;DB_CLOSE_DELAY=-1;NOT_FIXED_USER=TRUE
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=username
+spring.datasource.password=password
+
+# Hibernate configurado para crear las tablas automáticamente en H2
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true

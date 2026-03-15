@@ -42,6 +42,19 @@ jobs:
       - name: Check Code Quality (Checkstyle)
         run: ./mvnw checkstyle:check
 
+      - name: Create temporary properties for CI
+        run: |
+          mkdir -p src/main/resources
+          cat <<EOF > src/main/resources/application.properties
+          spring.profiles.active=ci
+          spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
+          spring.datasource.driver-class-name=org.h2.Driver
+          spring.datasource.username=sa
+          spring.datasource.password=
+          spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+          spring.jpa.hibernate.ddl-auto=create-drop
+          EOF
+
       # 3. Ejecutar Tests (Igual que tu pre-push)
       - name: Run Unit & Integration Tests
         run: ./mvnw test
