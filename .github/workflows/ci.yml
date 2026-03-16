@@ -47,7 +47,7 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG_TEST }}
           env-slug: "test"
           export-type: "file"
-          file-output-path: "src/test/resources/application-test.properties"
+          file-output-path: "/src/test/resources/application-test.properties"
 
       - name: Run Tests with Infisical
         if: github.event_name == 'pull_request'
