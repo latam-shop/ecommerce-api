@@ -41,7 +41,7 @@ jobs:
 
       - name: Run Tests with Infisical
         if: github.event_name == 'pull_request'
-        run: infisical run --env=test --raw -- ./mvnw test -Dspring.profiles.active=test -ntp
+        run: infisical run --env=test --silent -- ./mvnw test -Dspring.profiles.active=test -ntp
         env:
           INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN_TEST }}
 
