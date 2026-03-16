@@ -43,7 +43,18 @@ jobs:
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_TEST }}
           project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG_TEST }}
           env-slug: "test"
-          export-type: "env"
+          export-type: "file"
+          file-output-path: "/test-raw.env"
+
+
+      - name: Clean and Install Properties
+        if: github.event_name == 'pull_request'
+        run: |
+          mkdir -p src/test/resources
+          # El parser mágico: quita las comillas simples que pone la Action y las dobles de Infisical
+          sed "s/'//g; s/\"//g" ${{ github.workspace }}/test-raw.env > src/test/resources/application-test.properties
+          echo "Archivo application-test.properties generado y limpio:"
+          cat src/test/resources/application-test.properties
 
       - name: Run Tests with Infisical
         if: github.event_name == 'pull_request'
