@@ -73,24 +73,41 @@ jobs:
         id: set-env
         run: |
           if [[ "${{ github.ref_name }}" == "prod" ]]; then
-          echo "env_name=prod" >> $GITHUB_OUTPUT
+            echo "env_name=prod" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == "pre" ]]; then
-          echo "env_name=staging" >> $GITHUB_OUTPUT
+            echo "env_name=staging" >> $GITHUB_OUTPUT
           else
-          echo "env_name=dev" >> $GITHUB_OUTPUT
+            echo "env_name=dev" >> $GITHUB_OUTPUT
           fi
+          
+      - name: Fetch Production/Dev Secrets from Infisical
+        if: github.event_name == 'push'
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}"latam-shop"
+          env-slug: ${{ steps.set-env.outputs.env_name }}
+          export-type: "file"
+          file-output-path: "/release-raw.env"
+
+      - name: Clean and Install Production Properties
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p src/main/resources
+          sed "s/'//g; s/\"//g" ${{ github.workspace }}/release-raw.env > src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties          
+          echo "Archivo generado: src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties"
+          ls -l src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties
 
       - name: Build Final Package
         if: github.event_name == 'push'
-        run: |
-          infisical run --env=${{ steps.set-env.outputs.env_name }} -- ./mvnw clean package -DskipTests -ntp
-        env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+        run: ./mvnw clean package -DskipTests -Dspring.profiles.active=${{ steps.set-env.outputs.env_name }} -ntp
 
       - name: Upload Build Artifact
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
-          name: ecommerce-release
+          name: ${{ steps.set-env.outputs.env_name == 'prod' && 'ecommerce-release' || format('ecommerce-release-{0}', steps.set-env.outputs.env_name) }}
           path: target/*.jar
           retention-days: 1
