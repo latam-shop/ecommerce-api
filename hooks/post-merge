@@ -4,7 +4,7 @@ if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q "pom.xml
   echo "📦 [POST-MERGE] Se detectaron cambios en el pom.xml."
   echo "Actualizando dependencias y compilando..."
 
-  ./mvnw clean compile
+  ./mvnw clean compile -ntp
 
   echo "✅ Entorno actualizado correctamente."
 else

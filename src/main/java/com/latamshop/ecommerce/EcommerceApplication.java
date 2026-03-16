@@ -22,6 +22,5 @@ public class EcommerceApplication {
   public void logSystemInfo() {
     log.info("Zona Horaria de la JVM: {}", ZoneId.systemDefault());
     log.info("Hora Local actual: {}", LocalDateTime.now());
-    log.info("Test");
   }
 }

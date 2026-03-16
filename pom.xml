@@ -141,7 +141,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.4</version>
 				<configuration>
-					<argLine>-Duser.timezone=UTC</argLine>
+					<argLine>-Duser.timezone=UTC -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
 				</configuration>
 			</plugin>
 
@@ -216,6 +216,7 @@
 						<commit-msg>hooks/commit-msg</commit-msg>
 						<pre-commit>hooks/pre-commit</pre-commit>
 						<pre-push>hooks/pre-push</pre-push>
+						<pre-push>hooks/post-merge</pre-push>
 					</installHooks>
 				</configuration>
 				<executions>

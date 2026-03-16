@@ -13,7 +13,7 @@ fi
 echo "🌿 Rama detectada: $branch"
 echo "🧪 [PUSH] Ejecutando batería de tests antes de subir código..."
 
-if ! ./mvnw test; then
+if ! ./mvnw test -B -ntp -Dspring.profiles.active=test; then
     echo "❌ ERROR: Los tests han fallado."
     echo "El código NO se subirá al servidor. Arregla los tests primero."
     exit 1

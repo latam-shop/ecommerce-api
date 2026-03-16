@@ -1,2 +1,9 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+# Configuración por defecto para todos los archivos
+* text=auto
+
+# Asegurar que los scripts y workflows siempre usen LF (importante para Docker/CI)
+*.yml text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf

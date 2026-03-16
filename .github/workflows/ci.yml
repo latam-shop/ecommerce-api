@@ -1,17 +1,10 @@
-name: CI Quality & Safety Validation
+name: CI - Quality & Build
 
-# Configuramos para que se dispare SOLO en Pull Requests hacia ramas protegidas
 on:
   pull_request:
-    branches:
-      - dev
-      - pre
-      - prod
-    # Opcional: solo si cambian archivos de código
-    paths:
-      - 'src/**'
-      - 'pom.xml'
-      - 'hooks/**'
+    branches: [ dev, pre, prod ]
+  push:
+    branches: [ dev, pre, prod ]
 
 jobs:
   validate-quality:
@@ -21,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necesario para algunas validaciones de Git
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -30,39 +23,59 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Install Infisical CLI
+        run: |
+          curl -1sLf 'https://dl.cloudsmith.io/public/infisical/cli/setup.deb.sh' | sudo bash
+          sudo apt-get update && sudo apt-get install -y infisical
+
       - name: Make mvnw executable
         run: chmod +x ./mvnw
 
-      # 1. Validar formato (Spotless)
-      # Aquí usamos 'check' porque el CI no debe "arreglar", solo "vigilar"
       - name: Check Code Formatting (Spotless)
-        run: ./mvnw spotless:check
+        if: github.event_name == 'pull_request'
+        run: ./mvnw spotless:check -ntp
 
-      # 2. Validar calidad y diseño (Checkstyle)
       - name: Check Code Quality (Checkstyle)
-        run: ./mvnw checkstyle:check
+        if: github.event_name == 'pull_request'
+        run: ./mvnw checkstyle:check -ntp
 
-      - name: Create temporary properties for CI
-        run: |
-          mkdir -p src/main/resources
-          cat <<EOF > src/main/resources/application.properties
-          spring.profiles.active=ci
-          spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-          spring.datasource.driver-class-name=org.h2.Driver
-          spring.datasource.username=sa
-          spring.datasource.password=
-          spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-          spring.jpa.hibernate.ddl-auto=create-drop
-          EOF
+      - name: Run Tests with Infisical
+        if: github.event_name == 'pull_request'
+        run: infisical run --env=test -- ./mvnw test -ntp
+        env:
+          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN_TEST }}
 
-      # 3. Ejecutar Tests (Igual que tu pre-push)
-      - name: Run Unit & Integration Tests
-        run: ./mvnw test
-
-      # 4. Validar que no hay marcadores de conflicto (Seguridad extra)
       - name: Verify no merge conflicts markers
+        if: github.event_name == 'pull_request'
         run: |
           if grep -rE "<<<<<<<|=======|>>>>>>>" src/; then
             echo "Conflict markers detected!"
             exit 1
           fi
+
+      - name: Set Infisical Environment
+        if: github.event_name == 'push'
+        id: set-env
+        run: |
+          if [[ "${{ github.ref_name }}" == "prod" ]]; then
+          echo "env_name=prod" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == "pre" ]]; then
+          echo "env_name=staging" >> $GITHUB_OUTPUT
+          else
+          echo "env_name=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Final Package
+        if: github.event_name == 'push'
+        run: |
+          infisical run --env=${{ steps.set-env.outputs.env_name }} -- ./mvnw clean package -DskipTests -ntp
+        env:
+          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN }}
+
+      - name: Upload Build Artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecommerce-release
+          path: target/*.jar
+          retention-days: 1
