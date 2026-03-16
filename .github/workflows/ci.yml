@@ -39,11 +39,21 @@ jobs:
         if: github.event_name == 'pull_request'
         run: ./mvnw checkstyle:check -ntp
 
+      - name: Fetch Secrets from Infisical
+        if: github.event_name == 'pull_request'
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: "universal-auth"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID_TEST }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_TEST }}
+          project-slug: "latam-shop-test"
+          env-slug: "test"
+          export-type: "file"
+          file-output-path: "src/test/resources/application-test.properties"
+
       - name: Run Tests with Infisical
         if: github.event_name == 'pull_request'
-        run: infisical run --env=test --silent -- ./mvnw test -Dspring.profiles.active=test -ntp
-        env:
-          INFISICAL_TOKEN: ${{ secrets.INFISICAL_TOKEN_TEST }}
+        run: ./mvnw test -Dspring.profiles.active=test -ntp
 
       - name: Verify no merge conflicts markers
         if: github.event_name == 'pull_request'
