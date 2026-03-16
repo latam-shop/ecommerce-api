@@ -23,11 +23,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Install Infisical CLI
-        run: |
-          curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | sudo -E bash
-          sudo apt-get update && sudo apt-get install -y infisical
-
       - name: Make mvnw executable
         run: chmod +x ./mvnw
 
@@ -43,7 +38,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: Infisical/secrets-action@v1.0.9
         with:
-          method: "universal-auth"
+          method: "universal"
           client-id: ${{ secrets.INFISICAL_CLIENT_ID_TEST }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_TEST }}
           project-slug: "latam-shop-test"
