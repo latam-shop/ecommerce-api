@@ -41,7 +41,7 @@ jobs:
           method: "universal"
           client-id: ${{ secrets.INFISICAL_CLIENT_ID_TEST }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_TEST }}
-          project-slug: "latam-shop-test"
+          project-slug: "latam-shop-test-jngt"
           env-slug: "test"
           export-type: "file"
           file-output-path: "src/test/resources/application-test.properties"
