@@ -26,9 +26,6 @@ jobs:
       - name: Make mvnw executable
         run: chmod +x ./mvnw
 
-      - name: Create resources directory
-        run: mkdir -p src/test/resources
-
       - name: Check Code Formatting (Spotless)
         if: github.event_name == 'pull_request'
         run: ./mvnw spotless:check -ntp
@@ -46,8 +43,7 @@ jobs:
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_TEST }}
           project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG_TEST }}
           env-slug: "test"
-          export-type: "file"
-          file-output-path: "/src/test/resources/application-test.properties"
+          export-type: "env"
 
       - name: Run Tests with Infisical
         if: github.event_name == 'pull_request'
