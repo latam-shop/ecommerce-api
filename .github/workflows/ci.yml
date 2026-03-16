@@ -51,7 +51,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           mkdir -p src/test/resources
-          # El parser mágico: quita las comillas simples que pone la Action y las dobles de Infisical
           sed "s/'//g; s/\"//g" ${{ github.workspace }}/test-raw.env > src/test/resources/application-test.properties
           echo "Archivo application-test.properties generado y limpio:"
           cat src/test/resources/application-test.properties
@@ -87,7 +86,7 @@ jobs:
           method: "universal"
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}"latam-shop"
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}
           env-slug: ${{ steps.set-env.outputs.env_name }}
           export-type: "file"
           file-output-path: "/release-raw.env"
