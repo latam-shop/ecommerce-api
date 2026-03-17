@@ -1,0 +1,111 @@
+name: CI - Quality & Build
+
+on:
+  pull_request:
+    branches: [ dev, stg, main ]
+  push:
+    branches: [ dev, stg, main ]
+
+jobs:
+  validate-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Check Code Formatting (Spotless)
+        if: github.event_name == 'pull_request'
+        run: ./mvnw spotless:check -ntp
+
+      - name: Check Code Quality (Checkstyle)
+        if: github.event_name == 'pull_request'
+        run: ./mvnw checkstyle:check -ntp
+
+      - name: Fetch Secrets from Infisical
+        if: github.event_name == 'pull_request'
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID_TEST }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET_TEST }}
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG_TEST }}
+          env-slug: "test"
+          export-type: "file"
+          file-output-path: "/test-raw.env"
+
+
+      - name: Clean and Install Properties
+        if: github.event_name == 'pull_request'
+        run: |
+          mkdir -p src/test/resources
+          sed "s/'//g; s/\"//g" ${{ github.workspace }}/test-raw.env > src/test/resources/application-test.properties
+          echo "application-test.properties file generated and cleaned"
+
+      - name: Run Tests with Infisical
+        if: github.event_name == 'pull_request'
+        run: ./mvnw test -Dspring.profiles.active=test -ntp
+
+      - name: Verify no merge conflicts markers
+        if: github.event_name == 'pull_request'
+        run: |
+          if grep -rE "<<<<<<<|=======|>>>>>>>" src/; then
+            echo "Conflict markers detected!"
+            exit 1
+          fi
+
+      - name: Set Infisical Environment
+        if: github.event_name == 'push'
+        id: set-env
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "env_name=prod" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == "pre" ]]; then
+            echo "env_name=staging" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=dev" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Fetch Production/Dev Secrets from Infisical
+        if: github.event_name == 'push'
+        uses: Infisical/secrets-action@v1.0.9
+        with:
+          method: "universal"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}
+          env-slug: ${{ steps.set-env.outputs.env_name }}
+          export-type: "file"
+          file-output-path: "/release-raw.env"
+
+      - name: Clean and Install Production Properties
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p src/main/resources
+          sed "s/'//g; s/\"//g" ${{ github.workspace }}/release-raw.env > src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties          
+          echo "Generated file: src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties"
+          ls -l src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties
+
+      - name: Build Final Package
+        if: github.event_name == 'push'
+        run: ./mvnw clean package -DskipTests -Dspring.profiles.active=${{ steps.set-env.outputs.env_name }} -ntp
+
+      - name: Upload Build Artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-env.outputs.env_name == 'main' && 'ecommerce-release' || format('ecommerce-release-{0}', steps.set-env.outputs.env_name) }}
+          path: target/*.jar
+          retention-days: 1

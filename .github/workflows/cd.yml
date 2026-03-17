@@ -1,0 +1,62 @@
+name: CD - Docker Release to GHCR
+
+on:
+  workflow_run:
+    workflows: ["CI - Quality & Build"]
+    types: [completed]
+    branches: ["main", "dev", "stg"]
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  deploy-to-ghcr:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract branch name
+        id: branch-step
+        run: |
+          echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
+
+      - name: Determine Artifact Name
+        id: artifact-meta
+        run: |
+          BRANCH="${{ steps.branch-step.outputs.branch }}"
+          if [[ "$BRANCH" == "main" ]]; then
+            echo "artifact_name=ecommerce-release" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == "pre" ]]; then
+            echo "artifact_name=ecommerce-release-staging" >> $GITHUB_OUTPUT
+          else
+            echo "artifact_name=ecommerce-release-dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download JAR from CI
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.artifact-meta.outputs.artifact_name }}
+          run_id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: target/
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/ecommerce-api:${{ steps.branch-step.outputs.branch }}
+            ghcr.io/${{ github.repository_owner }}/ecommerce-api:${{ github.event.workflow_run.head_sha }}
+            ${{ steps.branch-step.outputs.branch == 'main' && format('ghcr.io/{0}/ecommerce-api:latest', github.repository_owner) || '' }}

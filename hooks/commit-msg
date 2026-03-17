@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+conventional_commit_regex="^(build|chore|ci|docs|feat|feature|fix|perf|refactor|revert|style|test)(\([a-z \-]+\))?!?: [A-Za-z0-9].+$"
+
+commit_message=$(grep -v '^#' "$1")
+
+if [ -z "$commit_message" ]; then
+   echo -e "\e[31m❌ Error: The commit message cannot be empty..\e[0m"
+   exit 1
+fi
+
+first_line=$(echo "$commit_message" | head -n 1)
+if [ ${#first_line} -gt 72 ]; then
+   echo -e "\e[33m⚠️  Note: The title is very long (${#first_line}/72). Please try to make it shorter..\e[0m"
+   exit 1
+fi
+
+if [[ "$first_line" =~ $conventional_commit_regex ]]; then
+   echo -e "\e[32m✅ Valid commit message...\e[0m"
+   exit 0
+fi
+
+echo -e "\e[31m❌ Error: The message format does not follow 'Conventional Commits''.\e[0m"
+echo -e "\e[34mStructure: type (scope): description\e[0m"
+echo "Valid types: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert, feature"
+echo "Example: feat(auth): add JWT validation"
+echo "More info: https://www.conventionalcommits.org/es/"
+exit 1

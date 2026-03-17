@@ -1,0 +1,20 @@
+#!/bin/sh
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$branch" = "dev" ] || [ "$branch" = "main" ] || [ "$branch" = "stg" ]; then
+  echo "❌ ERROR: Attempted direct PUSH to protected branch '$branch'."
+  echo "You must open a Pull Request to integrate changes into this branch."
+  exit 1
+fi
+
+echo "🌿 Branch detected: $branch"
+echo "🧪 [PUSH] Running a battery of tests before uploading code..."
+
+if ! ./mvnw test -ntp -Dspring.profiles.active=test; then
+    echo "❌ ERROR: The tests have failed."
+    echo "The code will NOT be uploaded to the server. Fix the tests first.."
+    exit 1
+fi
+
+echo "✅ Tests passed successfully. Uploading code to Origin./$branch..."
