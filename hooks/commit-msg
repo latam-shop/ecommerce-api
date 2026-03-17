@@ -1,35 +1,28 @@
 #!/usr/bin/env bash
 
-# 1. Regex para Conventional Commits (mejorada para permitir mayúsculas opcionales en el sujeto)
-conventional_commit_regex="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z \-]+\))?!?: [A-Za-z0-9].+$"
+conventional_commit_regex="^(build|chore|ci|docs|feat|feature|fix|perf|refactor|revert|style|test)(\([a-z \-]+\))?!?: [A-Za-z0-9].+$"
 
-# 2. Obtener el mensaje limpiando líneas de comentarios de Git
 commit_message=$(grep -v '^#' "$1")
 
-# 3. Validar que el mensaje no esté vacío
 if [ -z "$commit_message" ]; then
-   echo -e "\e[31m❌ Error: El mensaje del commit no puede estar vacío.\e[0m"
+   echo -e "\e[31m❌ Error: The commit message cannot be empty..\e[0m"
    exit 1
 fi
 
-# 4. Validar la longitud de la primera línea (Título)
 first_line=$(echo "$commit_message" | head -n 1)
 if [ ${#first_line} -gt 72 ]; then
-   echo -e "\e[33m⚠️  Aviso: El título es muy largo (${#first_line}/72). Intenta ser más breve.\e[0m"
-   # Opcional: exit 1 si quieres ser estricto
+   echo -e "\e[33m⚠️  Note: The title is very long (${#first_line}/72). Please try to make it shorter..\e[0m"
    exit 1
 fi
 
-# 5. Validar contra la Regex
 if [[ "$first_line" =~ $conventional_commit_regex ]]; then
-   echo -e "\e[32m✅ Mensaje de commit válido...\e[0m"
+   echo -e "\e[32m✅ Valid commit message...\e[0m"
    exit 0
 fi
 
-# 6. Mensaje de error pedagógico
-echo -e "\e[31m❌ Error: El formato del mensaje no sigue 'Conventional Commits'.\e[0m"
-echo -e "\e[34mEstructura: tipo(alcance): descripción\e[0m"
-echo "Tipos válidos: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert"
-echo "Ejemplo: feat(auth): agregar validación de JWT"
-echo "Más info: https://www.conventionalcommits.org/es/"
+echo -e "\e[31m❌ Error: The message format does not follow 'Conventional Commits''.\e[0m"
+echo -e "\e[34mStructure: type (scope): description\e[0m"
+echo "Tipos válidos: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert, feature"
+echo "Example: feat(auth): add JWT validation"
+echo "More info: https://www.conventionalcommits.org/es/"
 exit 1

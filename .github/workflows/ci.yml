@@ -2,9 +2,9 @@ name: CI - Quality & Build
 
 on:
   pull_request:
-    branches: [ dev, pre, prod ]
+    branches: [ dev, stg, main ]
   push:
-    branches: [ dev, pre, prod ]
+    branches: [ dev, stg, main ]
 
 jobs:
   validate-quality:
@@ -52,8 +52,7 @@ jobs:
         run: |
           mkdir -p src/test/resources
           sed "s/'//g; s/\"//g" ${{ github.workspace }}/test-raw.env > src/test/resources/application-test.properties
-          echo "Archivo application-test.properties generado y limpio:"
-          cat src/test/resources/application-test.properties
+          echo "application-test.properties file generated and cleaned"
 
       - name: Run Tests with Infisical
         if: github.event_name == 'pull_request'
@@ -71,7 +70,7 @@ jobs:
         if: github.event_name == 'push'
         id: set-env
         run: |
-          if [[ "${{ github.ref_name }}" == "prod" ]]; then
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "env_name=prod" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == "pre" ]]; then
             echo "env_name=staging" >> $GITHUB_OUTPUT
@@ -96,7 +95,7 @@ jobs:
         run: |
           mkdir -p src/main/resources
           sed "s/'//g; s/\"//g" ${{ github.workspace }}/release-raw.env > src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties          
-          echo "Archivo generado: src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties"
+          echo "Generated file: src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties"
           ls -l src/main/resources/application-${{ steps.set-env.outputs.env_name }}.properties
 
       - name: Build Final Package
@@ -107,6 +106,6 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.set-env.outputs.env_name == 'prod' && 'ecommerce-release' || format('ecommerce-release-{0}', steps.set-env.outputs.env_name) }}
+          name: ${{ steps.set-env.outputs.env_name == 'main' && 'ecommerce-release' || format('ecommerce-release-{0}', steps.set-env.outputs.env_name) }}
           path: target/*.jar
           retention-days: 1

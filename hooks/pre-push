@@ -1,22 +1,20 @@
 #!/bin/sh
 
-# Obtener el nombre de la rama actual
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-# 1. Bloqueo de ramas protegidas
-if [ "$branch" = "dev" ] || [ "$branch" = "prod" ] || [ "$branch" = "pre" ]; then
-  echo "❌ ERROR: Intento de PUSH directo a la rama protegida '$branch'."
-  echo "Debes abrir un Pull Request para integrar cambios en esta rama."
+if [ "$branch" = "dev" ] || [ "$branch" = "main" ] || [ "$branch" = "stg" ]; then
+  echo "❌ ERROR: Attempted direct PUSH to protected branch '$branch'."
+  echo "You must open a Pull Request to integrate changes into this branch."
   exit 1
 fi
 
-echo "🌿 Rama detectada: $branch"
-echo "🧪 [PUSH] Ejecutando batería de tests antes de subir código..."
+echo "🌿 Branch detected: $branch"
+echo "🧪 [PUSH] Running a battery of tests before uploading code..."
 
 if ! ./mvnw test -ntp -Dspring.profiles.active=test; then
-    echo "❌ ERROR: Los tests han fallado."
-    echo "El código NO se subirá al servidor. Arregla los tests primero."
+    echo "❌ ERROR: The tests have failed."
+    echo "The code will NOT be uploaded to the server. Fix the tests first.."
     exit 1
 fi
 
-echo "✅ Tests pasados con éxito. Subiendo código a origin/$branch..."
+echo "✅ Tests passed successfully. Uploading code to Origin./$branch..."

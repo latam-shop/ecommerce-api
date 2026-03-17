@@ -1,52 +1,43 @@
 #!/bin/sh
 
-# Obtener el nombre de la rama actual
-# Obtener el nombre de la rama actual
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-# 1. Bloqueo de ramas protegidas
-if [[ "$branch" =~ ^(dev|prod|pre)$ ]]; then
-  echo "❌ Error: No puedes comitear directamente en '$branch'."
+if [[ "$branch" =~ ^(dev|main|stg)$ ]]; then
+  echo "❌ Error: You cannot commit directly to '$branch'."
   exit 1
 fi
 
-# 2. Prevenir marcadores de conflicto de Git
 if grep -rE "<<<<<<<|=======|>>>>>>>" src/; then
-  echo "❌ Error: Se detectaron marcadores de conflicto de Git. ¡Limpia el código!"
+  echo "❌ Error: Git conflict markers were detected. Clean up your code!"
   exit 1
 fi
 
 
 find_large_files=$(git diff --cached --name-only | xargs -I {} find {} -size +5M)
 if [ -n "$find_large_files" ]; then
-  echo "❌ Error: Estás intentando subir archivos de más de 5MB: $find_large_files"
-  echo "Usa Git LFS o comprime los archivos."
+  echo "❌ Error: You are trying to upload files larger than 5MB: $find_large_files"
+  echo "Use Git LFS or compress the files."
   exit 1
 fi
 
-echo "🌿 Rama detectada: $branch"
+echo "🌿 Branch detected: $branch"
 
-# 1. Aplicar formato automáticamente (El peluquero)
-echo "🎨 [1/3] Aplicando formateo de código (Spotless)..."
+echo "🎨 [1/3] Applying code formatting (Spotless)..."
 ./mvnw spotless:apply -ntp
 
-# 2. Re-añadir archivos modificados por Spotless
-# Solo afecta a los archivos que ya estabas intentando commitear
 git add -u
 
-# 3. Validar calidad del código (El profesor)
-echo "🔍 [2/3] Validando reglas de calidad (Checkstyle)..."
+echo "🔍 [2/3] Validating quality rules (Checkstyle)..."
 if ! ./mvnw checkstyle:check -ntp; then
-    echo "❌ Error: El código no cumple con las reglas de Checkstyle."
-    echo "Revisa el reporte en target/checkstyle-result.xml o los logs arriba."
+    echo "❌ Error: The code does not comply with Checkstyle rules."
+    echo "Check the report in target/checkstyle-result.xml or the logs above."
     exit 1
 fi
 
-# 4. Verificación final de Spotless
-echo "✅ [3/3] Verificación final de Spotless..."
+echo "✅ [3/3] Final Spotless Verification..."
 if ! ./mvnw spotless:check -ntp; then
-    echo "❌ Error: Falló la validación final de Spotless."
+    echo "❌ Error: Spotless final validation failed."
     exit 1
 fi
 
-echo "🚀 ¡Calidad verificada! Creando commit..."
+echo "🚀 Quality verified! Creating commit..."

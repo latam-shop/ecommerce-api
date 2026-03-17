@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: ["CI - Quality & Build"]
     types: [completed]
-    branches: ["prod", "dev", "pre"]
+    branches: ["main", "dev", "stg"]
 
 permissions:
   packages: write
@@ -28,7 +28,7 @@ jobs:
         id: artifact-meta
         run: |
           BRANCH="${{ steps.branch-step.outputs.branch }}"
-          if [[ "$BRANCH" == "prod" ]]; then
+          if [[ "$BRANCH" == "main" ]]; then
             echo "artifact_name=ecommerce-release" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "pre" ]]; then
             echo "artifact_name=ecommerce-release-staging" >> $GITHUB_OUTPUT
@@ -59,4 +59,4 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/ecommerce-api:${{ steps.branch-step.outputs.branch }}
             ghcr.io/${{ github.repository_owner }}/ecommerce-api:${{ github.event.workflow_run.head_sha }}
-            ${{ steps.branch-step.outputs.branch == 'prod' && format('ghcr.io/{0}/ecommerce-api:latest', github.repository_owner) || '' }}
+            ${{ steps.branch-step.outputs.branch == 'main' && format('ghcr.io/{0}/ecommerce-api:latest', github.repository_owner) || '' }}
