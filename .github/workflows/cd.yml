@@ -24,22 +24,25 @@ jobs:
         run: |
           echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
 
-      - name: Determine Artifact Name
-        id: artifact-meta
+      - name: Determine Naming Strategy
+        id: meta
         run: |
           BRANCH="${{ steps.branch-step.outputs.branch }}"
           if [[ "$BRANCH" == "main" ]]; then
             echo "artifact_name=ecommerce-release" >> $GITHUB_OUTPUT
+            echo "image_name=ecommerce-api" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "stg" ]]; then
             echo "artifact_name=ecommerce-release-stg" >> $GITHUB_OUTPUT
+            echo "image_name=ecommerce-api-stg" >> $GITHUB_OUTPUT
           else
             echo "artifact_name=ecommerce-release-dev" >> $GITHUB_OUTPUT
+            echo "image_name=ecommerce-api-dev" >> $GITHUB_OUTPUT
           fi
 
       - name: Download JAR from CI
         uses: actions/download-artifact@v4
         with:
-          name: ${{ steps.artifact-meta.outputs.artifact_name }}
+          name: ${{ steps.meta.outputs.artifact_name }}
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: target/
@@ -57,6 +60,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/ecommerce-api:${{ steps.branch-step.outputs.branch }}
-            ghcr.io/${{ github.repository_owner }}/ecommerce-api:${{ github.event.workflow_run.head_sha }}
-            ${{ steps.branch-step.outputs.branch == 'main' && format('ghcr.io/{0}/ecommerce-api:latest', github.repository_owner) || '' }}
+            ghcr.io/${{ github.repository_owner }}/${{ steps.meta.outputs.image_name }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ steps.meta.outputs.image_name }}:${{ github.event.workflow_run.head_sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
