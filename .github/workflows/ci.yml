@@ -71,9 +71,9 @@ jobs:
         id: set-env
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "env_name=prod" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref_name }}" == "pre" ]]; then
-            echo "env_name=staging" >> $GITHUB_OUTPUT
+            echo "env_name=main" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == "stg" ]]; then
+            echo "env_name=stg" >> $GITHUB_OUTPUT
           else
             echo "env_name=dev" >> $GITHUB_OUTPUT
           fi
