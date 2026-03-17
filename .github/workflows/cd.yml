@@ -30,8 +30,8 @@ jobs:
           BRANCH="${{ steps.branch-step.outputs.branch }}"
           if [[ "$BRANCH" == "main" ]]; then
             echo "artifact_name=ecommerce-release" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "pre" ]]; then
-            echo "artifact_name=ecommerce-release-staging" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == "stg" ]]; then
+            echo "artifact_name=ecommerce-release-stg" >> $GITHUB_OUTPUT
           else
             echo "artifact_name=ecommerce-release-dev" >> $GITHUB_OUTPUT
           fi
@@ -40,7 +40,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ steps.artifact-meta.outputs.artifact_name }}
-          run_id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: target/
 
