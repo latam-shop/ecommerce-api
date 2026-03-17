@@ -41,7 +41,6 @@ management.endpoint.health.group.custom.include=diskSpace,ping,ssl,livenessState
 management.endpoint.health.show-components=always
 management.metrics.tags.application=${spring.application.name}
 
-##Desactivar metricas
 management.health.db.enabled=false
 management.health.discovery.enabled=false
 management.health.discoveryComposite.enabled=false

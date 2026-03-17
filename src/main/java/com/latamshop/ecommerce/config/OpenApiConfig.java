@@ -25,8 +25,6 @@ public class OpenApiConfig {
     return new OpenAPI()
         .info(this.apiInfo(emailTeam))
         .servers(List.of(new Server().url(apiUrl).description("API principal")))
-
-        // JWT configuration
         .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
         .schemaRequirement(
             securitySchemeName,

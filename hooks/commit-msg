@@ -22,7 +22,7 @@ fi
 
 echo -e "\e[31m❌ Error: The message format does not follow 'Conventional Commits''.\e[0m"
 echo -e "\e[34mStructure: type (scope): description\e[0m"
-echo "Tipos válidos: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert, feature"
+echo "Valid types: feat, fix, chore, docs, style, refactor, perf, test, ci, build, revert, feature"
 echo "Example: feat(auth): add JWT validation"
 echo "More info: https://www.conventionalcommits.org/es/"
 exit 1
