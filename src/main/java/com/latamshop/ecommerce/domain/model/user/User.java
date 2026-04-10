@@ -1,25 +1,29 @@
-package com.latamshop.ecommerce.domain.model;
+package com.latamshop.ecommerce.domain.model.user;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
 
-    private final UUID id;
-
-    private final String name;
-    private final String email;
-    private final String password;
-    private final String phone;
-    private final String avatarUrl;
-    private final boolean emailVerified;
+    @EqualsAndHashCode.Include
+    private final UserId id;
+    private String name;
+    private String email; // replace later with Email value object
+    private Password password;
+    private String phone;
+    private String avatarUrl;
+    private boolean emailVerified;
     private boolean active;
     private LocalDateTime lastLogin;
     private final LocalDateTime createdAt;
 
-    public User(UUID id, String name, String email,
-                String password, String phone, String avatarUrl,
+    private User(UserId id, String name, String email,
+                Password password, String phone, String avatarUrl,
                 boolean emailVerified, boolean active, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
@@ -32,14 +36,13 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public static User registerNew(String name, String email, String password, String phone) {
+    public static User registerNew(String name, String email, Password password, String phone) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("name cannot be null or blank");
         if (email == null || email.isBlank()) throw new IllegalArgumentException("email cannot be null or blank");
-        if (password == null || password.isBlank()) throw new IllegalArgumentException("password cannot be null or blank");
         if (phone == null || phone.isBlank()) throw new IllegalArgumentException("phone cannot be null or blank");
 
-        return new User(
-                UUID.randomUUID(),
+    return new User(
+                UserId.generate(),
                 name,
                 email,
                 password,
@@ -51,28 +54,6 @@ public class User {
         );
     }
 
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public String getEmail() { return email; }
-    public String getPassword() { return password; }
-    public String getPhone() { return phone; }
-    public String getAvatarUrl() { return avatarUrl; }
-    public boolean isEmailVerified() { return emailVerified; }
-    public boolean isActive() { return active; }
-    public void deactivate() { this.active = false; } // metodo para desactivar un usuario
-    public void reactive() { this.active = true; } // metodo para reactivar un usuario
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    public void deactivate() { this.active = false; } // method to deactivate a user
+    public void reactivate() { this.active = true; } // method to reactivate a user
 }

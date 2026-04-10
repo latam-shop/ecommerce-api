@@ -7,7 +7,7 @@ target/
 src/main/resources/application.properties
 src/main/resources/application-prod.properties
 src/main/resources/application-dev.properties
-src/main/resources/application-test.properties
+src/main/resources/application-test.properties.cd
 src/main/resources/application-dev-dc.properties
 **/src/main/resources/application.properties
 **/src/main/resources/application.yml
