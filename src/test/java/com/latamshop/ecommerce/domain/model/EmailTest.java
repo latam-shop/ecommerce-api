@@ -8,10 +8,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class EmailTest {
     @ParameterizedTest
-    @ValueSource(strings = { "correoinvalido.com" })
-    void invalidFormat(String emailInvalido){
+    @ValueSource(strings = { "invalidemail.com" })
+    void invalidFormat(String invalidEmail){
         assertThatThrownBy(() ->
-                new Email(emailInvalido)).isInstanceOf(IllegalArgumentException.class)
+                new Email(invalidEmail)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Invalid email");
     }
 
