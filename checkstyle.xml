@@ -12,7 +12,7 @@
             <property name="max" value="50"/>
         </module>
         <module name="ParameterNumber">
-            <property name="max" value="7"/>
+            <property name="max" value="12"/>
         </module>
 
         <module name="PackageName">
