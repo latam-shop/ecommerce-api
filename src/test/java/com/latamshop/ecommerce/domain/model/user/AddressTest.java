@@ -18,7 +18,7 @@ public class AddressTest {
     void emptyId(UUID emptyId) {
         AssertionsForClassTypes.assertThatThrownBy(() -> new AddressId(emptyId))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("AddressId cannot be null");
+                .hasMessage("Address Id cannot be null");
     }
 
     @Test

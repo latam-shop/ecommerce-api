@@ -5,7 +5,7 @@ import java.util.UUID;
 public record AddressId(UUID value) {
     public AddressId {
         if (value == null) {
-            throw new IllegalArgumentException("AddressId cannot be null");
+            throw new IllegalArgumentException("Address Id cannot be null");
         }
     }
 
