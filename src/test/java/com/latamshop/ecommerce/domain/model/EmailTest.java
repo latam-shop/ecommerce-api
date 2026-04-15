@@ -1,6 +1,8 @@
 package com.latamshop.ecommerce.domain.model;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.latamshop.ecommerce.application.service.EmailValidationService;
 import com.latamshop.ecommerce.domain.model.user.Email;
@@ -10,9 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class EmailTest {
 
@@ -47,16 +46,18 @@ public class EmailTest {
 
     when(emailValidatorPort.isReal(emailTemporal)).thenReturn(false);
 
-    assertThrows(RuntimeException.class, () -> {
-      service.validateEmail(emailTemporal);
-    });
+    assertThrows(
+        RuntimeException.class,
+        () -> {
+          service.validateEmail(emailTemporal);
+        });
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"test@diego.com"})
   void ShouldBeInvalidEmail(String emptyValue) {
     assertThatThrownBy(() -> service.validateEmail(emptyValue))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessage("Email invalid or temp");
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage("Email invalid or temp");
   }
 }
