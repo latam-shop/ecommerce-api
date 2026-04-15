@@ -7,6 +7,19 @@ import org.junit.jupiter.api.Test;
 
 class UserTest {
 
+  @Test
+  void generate_shouldReturnNonNullUserId() {
+    UserId userId = UserId.generate();
+    assertThat(userId).isNotNull();
+  }
+
+  @Test
+  void generate_shouldReturnUniqueIds() {
+    UserId first = UserId.generate();
+    UserId second = UserId.generate();
+    assertThat(first).isNotEqualTo(second);
+  }
+
   // verifies successful creation and default states (active, unverified email).
   @Test
   void registerUser() {
