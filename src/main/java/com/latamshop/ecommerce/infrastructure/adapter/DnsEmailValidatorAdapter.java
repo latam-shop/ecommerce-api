@@ -1,4 +1,5 @@
 package com.latamshop.ecommerce.infrastructure.adapter;
+
 import com.latamshop.ecommerce.domain.port.EmailValidatorPort;
 import java.util.Hashtable;
 import java.util.List;
